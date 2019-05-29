@@ -1,0 +1,82 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>JS_CSP</title>
+    <style>
+        body {
+            background: #fff;
+        }
+
+        #main {
+            width: 400px;
+            height: 400px;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+<div id="logger">mouse move on the box below!!!</div>
+<div id="main"></div>
+<script>
+    function* eventListeningByCoroutine() {
+        var eventSource = someMagicFunction();
+        while (true) {
+            var e = yield eventSource.take();
+            console.log(e);
+            document.querySelector('#logger').innerHTML = e.pageX + ', ' + e.pageY
+        }
+    }
+
+    startCoroutine(eventListeningByCoroutine);
+
+
+    function startCoroutine(generatorFunction) {
+        var iter = generatorFunction();
+
+        function step(data) {
+            var it = iter.next(data);
+            console.log(it);
+            if (it.done) {
+                return
+            }
+            var callback = it.value;
+            callback(function (val) {
+                step(val)
+            })
+        }
+
+        step()
+    }
+
+    function someMagicFunction() {
+        var taker;
+        var iter = {
+            take: function () {
+                return function (callback) {
+                    taker = function (e) {
+                        callback(e)
+                    }
+                }
+            }
+        };
+
+        function put(e) {
+            if (!taker) {
+                return
+            }
+            var _taker = taker;
+            taker = null;
+            _taker(e)
+        }
+
+        document.querySelector('#main').addEventListener('mousemove', function (e) {
+            put(e)
+        });
+        return iter
+    }
+</script>
+</body>
+</html>
