@@ -1,67 +1,67 @@
 class Requset {
 
-    static formatParams(map) {
-        let arr = [];
-        for (let key in map) {
-            arr.push(encodeURIComponent(key) + "=" + encodeURIComponent(map[key]));
-        }
-        arr.push(("_=" + (+new Date)).replace(".", ""));
-        return arr.join("&");
+  static formatParams(map) {
+    let arr = [];
+    for (let key in map) {
+      arr.push(encodeURIComponent(key) + "=" + encodeURIComponent(map[key]));
     }
+    arr.push(("_=" + (+new Date)).replace(".", ""));
+    return arr.join("&");
+  }
 
-    static ajax({url, data, method = "get", successFn, failFn}) {
-        let params = this.formatParams(data);
-        let xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+  static ajax({url, data, method = "get", successFn, failFn}) {
+    let params = this.formatParams(data);
+    let xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
 
-        xhr.onreadystatechange = () => {
-            if (~~xhr.readyState === 4) {
-                let status = xhr.status;
-                if (status >= 200 && status < 300) {
-                    successFn && successFn(xhr.responseText, xhr.responseXML);
-                } else {
-                    failFn && failFn(status);
-                }
-            }
-        };
-
-        method = method.toUpperCase();
-        if (method === "GET") {
-            xhr.open("GET", `${url}?${params}`, true);
-            xhr.send(null);
-        } else if (method === "POST") {
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.send(params);
+    xhr.onreadystatechange = () => {
+      if (~~xhr.readyState === 4) {
+        let status = xhr.status;
+        if (status >= 200 && status < 300) {
+          successFn && successFn(xhr.responseText, xhr.responseXML);
+        } else {
+          failFn && failFn(status);
         }
-    }
-
-    static jsonp({url, data, successFn, failFn, callback, timeout}) {
-        if (!url || !callback) {
-            throw new Error("参数不合法");
-        }
-        let callbackName = ('jsonp_' + (+new Date)).replace(".", "");
-        data[callback] = callbackName;
-        let params = this.formatParams(data);
-        let script = document.createElement('script');
-        document.head.appendChild(script);
-
-        window[callbackName] = function (json) {
-            document.head.removeChild(script);
-            window[callbackName] = null;
-            clearTimeout(script.timer);
-            successFn && successFn(json);
-        };
-
-        script.src = `${url}?${params}`;
-
-        if (timeout) {
-            script.timer = setTimeout(function () {
-                window[callbackName] = null;
-                document.head.removeChild(script);
-                failFn && failFn({message: "请求超时"});
-            }, timeout);
-        }
+      }
     };
+
+    method = method.toUpperCase();
+    if (method === "GET") {
+      xhr.open("GET", `${url}?${params}`, true);
+      xhr.send(null);
+    } else if (method === "POST") {
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.send(params);
+    }
+  }
+
+  static jsonp({url, data, successFn, failFn, callback, timeout}) {
+    if (!url || !callback) {
+      throw new Error("参数不合法");
+    }
+    let callbackName = ('jsonp_' + (+new Date)).replace(".", "");
+    data[callback] = callbackName;
+    let params = this.formatParams(data);
+    let script = document.createElement('script');
+    document.head.appendChild(script);
+
+    window[callbackName] = function (json) {
+      document.head.removeChild(script);
+      window[callbackName] = null;
+      clearTimeout(script.timer);
+      successFn && successFn(json);
+    };
+
+    script.src = `${url}?${params}`;
+
+    if (timeout) {
+      script.timer = setTimeout(function () {
+        window[callbackName] = null;
+        document.head.removeChild(script);
+        failFn && failFn({message: "请求超时"});
+      }, timeout);
+    }
+  };
 }
 
 
