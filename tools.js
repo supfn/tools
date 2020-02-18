@@ -41,7 +41,8 @@ function uniqueArr(arr) {
 
 // 扁平化多维数组 - 1
 function flatten1(arr) {
-  return arr.reduce((pre, cur) => pre.concat(Array.isArray(cur) ? flatten1(cur) : cur), []);
+  return arr.reduce(
+    (pre, cur) => pre.concat(Array.isArray(cur) ? flatten1(cur) : cur), []);
 }
 
 // 扁平化多维数组 - 2
@@ -51,7 +52,7 @@ function flatten2(arr) {
 
 // 创建一个长度为length的字符串，a-z A-Z 0-9
 function getRandomString(len) {
-  let str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  let str = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
     s = '';
   while (len--) {
     let rand = Math.round(Math.random() * str.length);
@@ -203,27 +204,26 @@ function getByteLength(str) {
   // return s.replace(/[\u4e00-\u9fa5]/g,'xx').length;
 }
 
-
 // 去掉字符串两端的空格
 function trim(str) {
-  return str.replace(/(^\s*)|(\s*$)/g, "");
+  return str.replace(/(^\s*)|(\s*$)/g, '');
 }
 
 // 去掉字符串中所有的空格:
 function trims(str) {
-  return str.replace(/\s/g, "");
+  return str.replace(/\s/g, '');
 }
 
 function trimLeft(str) {
-  return str.replace(/(^\s*)/g, "");
+  return str.replace(/(^\s*)/g, '');
 }
 
 function trimRight(str) {
-  return str.replace(/(\s*$)/g, "");
+  return str.replace(/(\s*$)/g, '');
 }
 
 function parseURL(url) {
-  let a = document.createElement("a");
+  let a = document.createElement('a');
   a.href = url;
   return {
     source: url,
@@ -231,7 +231,7 @@ function parseURL(url) {
     host: a.hostname,
     port: a.port,
     query: a.search,
-    params: (function () {
+    params: (function() {
       let ret = {},
         seg = a.search.replace(/^\?/, '').split('&'),
         len = seg.length, i = 0, s;
@@ -248,7 +248,7 @@ function parseURL(url) {
     hash: a.hash.replace('#', ''),
     path: a.pathname.replace(/^([^\/])/, '/$1'),
     relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [, ''])[1],
-    segments: a.pathname.replace(/^\//, '').split('/')
+    segments: a.pathname.replace(/^\//, '').split('/'),
   };
 }
 
@@ -269,14 +269,14 @@ function imgPreLoad(imgList, callback, timeout = 3000) {
   }
   for (let i = 0; i < total; i++) {
     images[i] = new Image();
-    images[i].onload = images[i].onerror = function () {
+    images[i].onload = images[i].onerror = function() {
       loaded < total && (++loaded, callback && callback(loaded / total));
     };
     images[i].src = imgList[i];
   }
 
   // 如果timeout * total时间范围内，仍有图片未加载出来（判断条件是loaded < total），通知外部环境所有图片均已加载
-  setTimeout(function () {
+  setTimeout(function() {
     loaded < total && (loaded = total, callback && callback(loaded / total));
   }, timeout * total);
 }
@@ -305,7 +305,7 @@ function copy(value) {
 function throttle(fn, wait = 20, tail = false) {
   let invoking = false;
   let timer = null;
-  return function () {
+  return function() {
     let args = arguments;
     let context = this;
     if (timer) {
@@ -327,19 +327,43 @@ function throttle(fn, wait = 20, tail = false) {
   };
 }
 
-
-// 防抖：停止触发func之后的 ms之后执行func
+// 防抖：停止触发func之后的 {wait}ms 之后执行func
 function debounce(fn, wait) {
   let timer;
-  return function () {
+  return function() {
     if (timer) {
       clearTimeout(timer);
       timer = null;
     }
     let args = arguments;
     let context = this;
-    timer = setTimeout(function () {
+    timer = setTimeout(function() {
       fn.apply(context, args);
     }, wait);
   };
+}
+
+/*
+ 实现模板字符串
+ const a = {
+    b: 'c',
+    d: [{ e: 123 }]
+  };
+ const str = 'hello, ${b}, ${d[0].e}';
+ compile(str, a); // 'hello, c, 123'
+ */
+function compile( str, data){
+  let reg = /\${(.*?)}/;
+  let match = str.match(reg);
+  while(match){
+    let origin = match[0];
+    let exp = match[1];
+    let keys = exp.split(/[\[\].]/g);
+    let value = keys.filter(key => key.length).reduce((pre,next) => {
+      return pre[next] || {};
+    } , data);
+    str = str.replace(origin, value);
+    match = str.match(reg);
+  }
+  return str;
 }

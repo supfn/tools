@@ -31,7 +31,7 @@
         el.setAttribute(propName, propValue);
       }
 
-      children.forEach(function (child) {
+      children.forEach(function(child) {
         let childEl = (child instanceof CustomElement) ? child.render() : document.createTextNode(child);
         el.appendChild(childEl);
       });
@@ -42,7 +42,7 @@
   let ul = new CustomElement('ul', {id: 'list'}, [
     new CustomElement('li', {class: 'item'}, ['item1']),
     new CustomElement('li', {class: 'item'}, ['item2']),
-    new CustomElement('li', {class: 'item'}, ['item3'])
+    new CustomElement('li', {class: 'item'}, ['item3']),
   ]);
   let ulRoot = ul.render();
   document.body.appendChild(ulRoot);

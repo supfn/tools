@@ -1,0 +1,214 @@
+<html>
+<head>
+  <title>3D翻牌效果 </title>
+  <meta charset="UTF-8">
+  <script>
+    window.addEventListener(('orientationchange' in window ? 'orientationchange' : 'resize'), (function() {
+      function c() {
+        var d = document.documentElement;
+        var cw = d.clientWidth || 640;
+        d.style.fontSize = (20 * (cw / 320)) > 40 ? 40 + 'px' : (20 * (cw / 320)) + 'px';
+      }
+
+      c();
+      return c;
+    })(), false);
+  </script>
+  <style type="text/css">
+    /*-webkit-perspective: 800px;*/
+    /*perspective （透视，视角）：属性定义 3D 元素距视图的距离，以像素计。该属性允许您改变 3D 元素查看 3D 元素的视图。决定了你所看到的是2D transform 还是3D transform 。*/
+
+    .outer {
+      width: 100%;
+      margin: 0 auto;
+      font-size: 0;
+      padding: 0 0.5%;
+      position: relative;
+    }
+
+    .outer .flip {
+      font-size: 34px;
+      display: inline-block;
+      height: 480px;
+      width: 31%;
+      margin: 1%;
+      line-height: 480px;
+      text-align: center;
+      position: absolute;
+      transition: all 1.2s linear;
+      -webkit-transition: all 1.2s linear;
+    }
+
+    .outer .flip:first-child {
+      left: 0.5%;
+      top: 0;
+    }
+
+    .outer .flip:nth-child(2) {
+      left: 33.5%;
+      top: 0;
+    }
+
+    .outer .flip:nth-child(3) {
+      left: 66.5%;
+      top: 0;
+    }
+
+    .outer .flip:nth-child(4) {
+      left: 0.5%;
+      top: 500px;
+    }
+
+    .outer .flip:nth-child(5) {
+      left: 33.5%;
+      top: 500px;
+    }
+
+    .outer .flip:nth-child(6) {
+      left: 66.5%;
+      top: 500px;
+    }
+
+    .outer .flip.act {
+      left: 33.5%;
+      top: 1%;
+      -webkit-transform: scale(0);
+      transform: scale(0);
+      opacity: 0;
+    }
+
+    .outer .flip.act.selected {
+      -webkit-transform: scale(1);
+      transform: scale(1);
+      opacity: 1;
+      transition: all 1s linear;
+      -webkit-transition: all 1s linear;
+    }
+
+    .outer .flip div {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+
+      /*transform-style 属性规定如何在 3D 空间中呈现被嵌套的元素。默认flat（平的），我们3D效果，然后选择3D。*/
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+
+      /*backface-visibility 是否显示该选择元素旋转到背面后的样子。*/
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+
+      transition: all 2s;
+      -webkit-transition: all 2s;
+    }
+
+    .div1 {
+      background-color: #1aaefd;
+      transform: rotateY(0);
+      -webkit-transform: rotateY(0deg);
+    }
+
+    .div2 {
+      background-color: #00C000;
+      transform: rotateY(-180deg);
+      -webkit-transform: rotateY(-180deg);
+    }
+
+    .flip.active .div1 {
+      transform: rotateY(-180deg);
+      -webkit-transform: rotateY(-180deg);
+    }
+
+    .flip.active .div2 {
+      transform: rotateY(0deg);
+      -webkit-transform: rotateY(0deg);
+    }
+  </style>
+</head>
+
+<body>
+<div class="outer">
+  <div class="flip">
+    <div class="div1">div11111</div>
+    <div class="div2">div22222</div>
+  </div>
+  <div class="flip">
+    <div class="div1">div11111</div>
+    <div class="div2">div22222</div>
+  </div>
+  <div class="flip">
+    <div class="div1">div11111</div>
+    <div class="div2">div22222</div>
+  </div>
+  <div class="flip">
+    <div class="div1">div11111</div>
+    <div class="div2">div22222</div>
+  </div>
+  <div class="flip">
+    <div class="div1">div11111</div>
+    <div class="div2">div22222</div>
+  </div>
+  <div class="flip">
+    <div class="div1">div11111</div>
+    <div class="div2">div22222</div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    let flips = document.querySelectorAll('.flip');
+    let flipsLen = flips.length;
+    let outer = document.querySelector('.outer');
+
+    // 数组乱序
+    function shuffle(arr) {
+      let result = [];
+      while (arr.length) {
+        let index = ~~(Math.random() * arr.length);
+        result.push(arr[index]);
+        arr.splice(index, 1);
+      }
+      return result;
+    }
+
+    // 创建一个长度为len的数组，并且每个元素的值等于它的下标
+    function createArr(len) {
+      return [...new Array(len).keys()];
+    }
+
+    outer.addEventListener('click', function(e) {
+      let ep = e.target.parentNode;
+      console.log(e.target, this, ep);
+      if (ep.classList.contains('flip')) {
+        ep.classList.toggle('active');
+      }
+      let sleep = function(time) {
+        return new Promise(function(resolve, reject) {
+          setTimeout(function() {
+            resolve();
+          }, time);
+        });
+      };
+      (async function() {
+        console.log('start');
+        await sleep(1000);
+        let shuffleFlipsIndex = shuffle(createArr(flipsLen));
+        for (let i = 0; i < flipsLen; i++) {
+          let time = parseInt(Math.random() * 600);
+          await sleep(time);
+          flips[shuffleFlipsIndex[i]].classList.add('active');
+          console.log(i);
+        }
+        await sleep(800);
+        for (let i = 0; i < flipsLen; i++) {
+          flips[i].classList.add('act');
+        }
+        ep.classList.add('selected');
+        console.log('end');
+      })();
+    });
+  })();
+</script>
+</body>
+
+</html>
