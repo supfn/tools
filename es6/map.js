@@ -5,7 +5,7 @@
 
 class ES6Map {
   constructor(iterator) {
-    this._keys = [];w
+    this._keys = [];
     this._values = [];
     if (iterator && iterator[Symbol.iterator]) {
       for (let item of iterator) {
