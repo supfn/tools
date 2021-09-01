@@ -367,3 +367,8 @@ function compile( str, data){
   }
   return str;
 }
+
+// 获取某年某月份的天数
+function getDaysByYearAndMonth(year, month){
+  return new Date(year, month, 0).getDate()
+}
