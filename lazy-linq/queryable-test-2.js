@@ -1,4 +1,4 @@
-let Queryable = require('./Queryable.js');
+let Queryable = require('./queryable.js');
 let Benchmark = require('benchmark');
 
 

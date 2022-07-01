@@ -1,4 +1,4 @@
-let Queryable = require('./Queryable.js');
+let Queryable = require('./queryable.js');
 
 
 // Array.prototype.asQueryable = function () {

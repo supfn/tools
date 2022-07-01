@@ -1,26 +1,13 @@
-function isPlainObject(obj) {
-  return !!obj && Object.prototype.toString.call(obj) === '[object Object]';
-}
-
-function file2base64(file) {
-  return new Promise((resolve, reject) => {
-    let oFReader = new FileReader();
-    oFReader.onload = (oFREvent) => {
-      resolve(oFREvent.target.result);
-    };
-    oFReader.readAsDataURL(file);
-  });
-}
-
-function getObjectURL(file) {
-  return (window.URL || window.webkitURL).createObjectURL(file);
+// String | Number | Boolean | Array | Object | Function | Date | Null | Undefined
+function isType(type) {
+  return (val) => Object.prototype.toString.call(val).slice(8, -1) === type;
 }
 
 function clone(obj) {
   if (obj === null) {
     return null;
   }
-  if (typeof obj !== 'object') {
+  if (typeof obj !== "object") {
     return obj;
   }
   let newObj = obj.constructor === Array ? [] : {};
@@ -42,18 +29,20 @@ function uniqueArr(arr) {
 // 扁平化多维数组 - 1
 function flatten1(arr) {
   return arr.reduce(
-    (pre, cur) => pre.concat(Array.isArray(cur) ? flatten1(cur) : cur), []);
+    (pre, cur) => pre.concat(Array.isArray(cur) ? flatten1(cur) : cur),
+    []
+  );
 }
 
 // 扁平化多维数组 - 2
 function flatten2(arr) {
-  return arr.toString().split(',');
+  return arr.toString().split(",");
 }
 
 // 创建一个长度为length的字符串，a-z A-Z 0-9
 function getRandomString(len) {
-  let str = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-    s = '';
+  let str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    s = "";
   while (len--) {
     let rand = Math.round(Math.random() * str.length);
     s += str.charAt(rand);
@@ -62,7 +51,7 @@ function getRandomString(len) {
 }
 
 function randomStr(length) {
-  let s = '';
+  let s = "";
   while (s.length < length) {
     s += Math.random().toString(36).substr(2);
   }
@@ -74,14 +63,14 @@ function createArr(len) {
   return [...new Array(len).keys()];
 }
 
-// num
+// 判断num是否为一个整数
 function isInteger(num) {
   return num % 1 === 0;
 }
 
 // 判断num是否为一个浮点数
 function isFloat(num) {
-  return num | 0 !== num;
+  return num | (0 !== num);
 }
 
 // Number.prototype.toFixed 的修复
@@ -89,7 +78,7 @@ function toFixed(num, digits) {
   let times = Math.pow(10, digits);
   num = num * times + 0.5;
   num = parseInt(num) / times;
-  return num + '';
+  return num + "";
 }
 
 // 用0补全位数
@@ -99,11 +88,13 @@ function prefixInteger(num, length) {
 
 // 将数字类型转化为每3位一个逗号的货币格式
 function cuter(str) {
-  let len = str.length, str2 = '', max = Math.floor(len / 3);
+  let len = str.length,
+    str2 = "",
+    max = Math.floor(len / 3);
   for (let i = 0; i < max; i++) {
     let s = str.slice(len - 3, len);
     str = str.substr(0, len - 3);
-    str2 = (',' + s) + str2;
+    str2 = "," + s + str2;
     len = str.length;
   }
   str += str2;
@@ -111,7 +102,7 @@ function cuter(str) {
 }
 
 function cuter2(str) {
-  return str.replace(/\B(?=(?:\d{3})+$)/g, ',');
+  return str.replace(/\B(?=(?:\d{3})+$)/g, ",");
 }
 
 // 数组乱序 - 1
@@ -136,7 +127,7 @@ function shuffle2(arr) {
 // 数组乱序 - 3
 function shuffle3(arr) {
   let _arr = arr.concat();
-  for (let i = _arr.length; i--;) {
+  for (let i = _arr.length; i--; ) {
     let j = Math.floor(Math.random() * (i + 1));
     let temp = _arr[i];
     _arr[i] = _arr[j];
@@ -151,8 +142,7 @@ function shuffle4(arr) {
   let shuffled = Array(length);
   for (let index = 0; index < length; index++) {
     let rand = ~~(Math.random() * (index + 1));
-    if (rand !== index)
-      shuffled[index] = shuffled[rand];
+    if (rand !== index) shuffled[index] = shuffled[rand];
     shuffled[rand] = arr[index];
   }
   return shuffled;
@@ -163,6 +153,7 @@ function getRandomValFromArr(arr) {
   return arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
 }
 
+// 在数组中插入一个元素
 function insertElement(arr, value, index) {
   let arr1 = arr.slice(0, index);
   let arr2 = arr.slice(index);
@@ -171,20 +162,20 @@ function insertElement(arr, value, index) {
 
 // 在 async/await 中模拟sleep
 function sleep(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
 
 function getImageSize(url) {
   let img = new Image();
   img.src = url;
   return new Promise((resolve, reject) => {
-    img.onerror = () => reject(new Error('load image error!'));
-    img.onload = () => resolve({width: img.width, height: img.height});
+    img.onerror = () => reject(new Error("load image error!"));
+    img.onload = () => resolve({ width: img.width, height: img.height });
   });
 }
 
 function _qs(name) {
-  let reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+  let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
   let r = window.location.search.substr(1).match(reg);
   if (r !== null) {
     return decodeURIComponent(r[2]);
@@ -200,85 +191,58 @@ function _qs(name) {
  * @return {number}
  */
 function getByteLength(str) {
-  return str.replace(/[^\x00-\xff]/g, 'xx').length;
+  return str.replace(/[^\x00-\xff]/g, "xx").length;
   // return s.replace(/[\u4e00-\u9fa5]/g,'xx').length;
 }
 
 // 去掉字符串两端的空格
 function trim(str) {
-  return str.replace(/(^\s*)|(\s*$)/g, '');
+  return str.replace(/(^\s*)|(\s*$)/g, "");
 }
 
 // 去掉字符串中所有的空格:
 function trims(str) {
-  return str.replace(/\s/g, '');
+  return str.replace(/\s/g, "");
 }
 
 function trimLeft(str) {
-  return str.replace(/(^\s*)/g, '');
+  return str.replace(/(^\s*)/g, "");
 }
 
 function trimRight(str) {
-  return str.replace(/(\s*$)/g, '');
+  return str.replace(/(\s*$)/g, "");
 }
 
 function parseURL(url) {
-  let a = document.createElement('a');
+  let a = document.createElement("a");
   a.href = url;
   return {
     source: url,
-    protocol: a.protocol.replace(':', ''),
+    protocol: a.protocol.replace(":", ""),
     host: a.hostname,
     port: a.port,
     query: a.search,
-    params: (function() {
+    params: (function () {
       let ret = {},
-        seg = a.search.replace(/^\?/, '').split('&'),
-        len = seg.length, i = 0, s;
+        seg = a.search.replace(/^\?/, "").split("&"),
+        len = seg.length,
+        i = 0,
+        s;
       for (; i < len; i++) {
         if (!seg[i]) {
           continue;
         }
-        s = seg[i].split('=');
+        s = seg[i].split("=");
         ret[s[0]] = s[1];
       }
       return ret;
     })(),
-    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
-    hash: a.hash.replace('#', ''),
-    path: a.pathname.replace(/^([^\/])/, '/$1'),
-    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [, ''])[1],
-    segments: a.pathname.replace(/^\//, '').split('/'),
+    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ""])[1],
+    hash: a.hash.replace("#", ""),
+    path: a.pathname.replace(/^([^\/])/, "/$1"),
+    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [, ""])[1],
+    segments: a.pathname.replace(/^\//, "").split("/"),
   };
-}
-
-/**
- * @param imgList 要加载的图片地址列表，['img/1.png','img/2.png']
- * @param callback 每成功加载一个图片之后的回调，并传入“已加载的图片总数/要加载的图片总数”表示进度
- * @param timeout 每个图片加载的超时时间，默认为3s
- * @example imgPreLoad([img1,img2], percent => {}, 5000)
- */
-function imgPreLoad(imgList, callback, timeout = 3000) {
-  imgList = Array.isArray(imgList) && imgList || [];
-  callback = typeof (callback) === 'function' && callback;
-  let total = imgList.length,
-    loaded = 0,
-    images = [];
-  if (!total) {
-    return callback && callback(1);
-  }
-  for (let i = 0; i < total; i++) {
-    images[i] = new Image();
-    images[i].onload = images[i].onerror = function() {
-      loaded < total && (++loaded, callback && callback(loaded / total));
-    };
-    images[i].src = imgList[i];
-  }
-
-  // 如果timeout * total时间范围内，仍有图片未加载出来（判断条件是loaded < total），通知外部环境所有图片均已加载
-  setTimeout(function() {
-    loaded < total && (loaded = total, callback && callback(loaded / total));
-  }, timeout * total);
 }
 
 /**
@@ -289,13 +253,13 @@ function imgPreLoad(imgList, callback, timeout = 3000) {
  * ios下会拉起键盘又瞬间收起，因为聚焦到了输入域，要让输入域不可输入，添加input.setAttribute('readonly','readonly');
  */
 function copy(value) {
-  const input = document.createElement('input');
-  input.setAttribute('readonly', 'readonly');
-  input.setAttribute('value', value);
+  const input = document.createElement("input");
+  input.setAttribute("readonly", "readonly");
+  input.setAttribute("value", value);
   document.body.appendChild(input);
   input.select();
   input.setSelectionRange(0, 9999);
-  let res = document.execCommand && document.execCommand('copy');
+  let res = document.execCommand && document.execCommand("copy");
   document.body.removeChild(input);
   return res;
 }
@@ -305,7 +269,7 @@ function copy(value) {
 function throttle(fn, wait = 20, tail = false) {
   let invoking = false;
   let timer = null;
-  return function() {
+  return function () {
     let args = arguments;
     let context = this;
     if (timer) {
@@ -314,7 +278,7 @@ function throttle(fn, wait = 20, tail = false) {
     }
     if (!invoking) {
       invoking = true;
-      setTimeout(() => invoking = false, wait);
+      setTimeout(() => (invoking = false), wait);
       fn.apply(context, args);
     } else {
       // 尾调用 让方法在脱离事件后也能执行一次
@@ -330,45 +294,20 @@ function throttle(fn, wait = 20, tail = false) {
 // 防抖：停止触发func之后的 {wait}ms 之后执行func
 function debounce(fn, wait) {
   let timer;
-  return function() {
+  return function () {
     if (timer) {
       clearTimeout(timer);
       timer = null;
     }
     let args = arguments;
     let context = this;
-    timer = setTimeout(function() {
+    timer = setTimeout(function () {
       fn.apply(context, args);
     }, wait);
   };
 }
 
-/*
- 实现模板字符串
- const a = {
-    b: 'c',
-    d: [{ e: 123 }]
-  };
- const str = 'hello, ${b}, ${d[0].e}';
- compile(str, a); // 'hello, c, 123'
- */
-function compile( str, data){
-  let reg = /\${(.*?)}/;
-  let match = str.match(reg);
-  while(match){
-    let origin = match[0];
-    let exp = match[1];
-    let keys = exp.split(/[\[\].]/g);
-    let value = keys.filter(key => key.length).reduce((pre,next) => {
-      return pre[next] || {};
-    } , data);
-    str = str.replace(origin, value);
-    match = str.match(reg);
-  }
-  return str;
-}
-
 // 获取某年某月份的天数
-function getDaysByYearAndMonth(year, month){
-  return new Date(year, month, 0).getDate()
+function getDaysByYearAndMonth(year, month) {
+  return new Date(year, month, 0).getDate();
 }
