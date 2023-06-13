@@ -1,15 +1,15 @@
 // 实现 Array.prototype.splice
 
-Array.prototype._splice = function(start,delCount, ...items){
-  if(start > 0){
-    if(start > this.length-1){
-      start = this.length -1;
+Array.prototype._splice = function (start, delCount, ...items) {
+  if (start > 0) {
+    if (start > this.length - 1) {
+      start = this.length - 1;
     }
-  }else{
+  } else {
     start = Math.abs(start);
-    if(start > this.length){
+    if (start > this.length) {
       start = 0;
-    }else{
+    } else {
       start = this.length - start;
     }
   }
@@ -18,18 +18,18 @@ Array.prototype._splice = function(start,delCount, ...items){
   const removedArr = [];
   delCount = isNaN(Number(delCount)) ? 0 : Number(delCount);
 
-  for(let i=0; i<this.length;i++){
-    if(i<start || i>start+delCount-1){
+  for (let i = 0; i < this.length; i++) {
+    if (i < start || i > start + delCount - 1) {
       newArr.push(this[i])
-    }else {
+    } else {
       removedArr.push(this[i])
     }
-    if(i === start+delCount-1){
+    if (i === start + delCount - 1) {
       newArr.push(...items)
     }
   }
 
-  for(let i = 0; i<newArr.length; i++){
+  for (let i = 0; i < newArr.length; i++) {
     this[i] = newArr[i]
   }
 
@@ -37,13 +37,17 @@ Array.prototype._splice = function(start,delCount, ...items){
   return removedArr;
 };
 
+// 测试代码:
+function test() {
+  let arr = [0, 1, 2, 3, 4];
+  let arr2 = arr.slice();
 
-let arr = [0,1,2,3,4];
-let arr2 = arr.slice();
-
-let removed = arr._splice(5,0,'00');
-console.log(removed, arr);
+  let removed = arr._splice(5, 0, '00');
+  console.log(removed, arr);
 
 
-let removed2 = arr2.splice(5,0,'00');
-console.log(removed2, arr2);
+  let removed2 = arr2.splice(5, 0, '00');
+  console.log(removed2, arr2);
+}
+
+test();

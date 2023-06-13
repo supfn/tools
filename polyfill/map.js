@@ -75,9 +75,10 @@ class ES6Map {
   }
 }
 
-(function test() {
+// 测试代码
+function test() {
   const m = new ES6Map();
-  const o = {p: 'Hello World'};
+  const o = { p: 'Hello World' };
 
   m.set(o, 'content');
   console.log(m.get(o)); // "content"
@@ -101,4 +102,5 @@ class ES6Map {
   console.log(m.delete(o)); // true
   console.log(m.has(o)); // false
 
-})();
+}
+test();

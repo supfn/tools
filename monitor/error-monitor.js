@@ -1,179 +1,155 @@
-export default class ErrorMonitor {
-  constructor(options = {}) {
-    let defaultConfig = {
-      jsError: true,
-      Vue: false,
-      resourceError: false,
-      ajaxError: false,
-      consoleError: false,
-      scriptError: false,
-      filters: [], // 过滤器，命中的不上报
-      category: ['windowError', 'rejectPromise', 'resourceError', 'fetchError', 'ajaxError', 'consoleError',
-        'vueError', 'monitorError']
+import Vue from "vue";
+
+class ErrorReport {
+  constructor(ops = {}) {
+    // 上报Error地址
+    this.reportUrl =
+      ops.reportUrl || `${window.location.origin}/errorReport`;
+
+    this.options = {
+      appId: "", // 项目ID
+      appName: "", // 项目名称
+      browser: getBrowser(),
+      device: getDevices(),
+      userId: "", // userId
+      token: "", // token
+      timeSpan: "", // 发送数据时的时间戳
+      infoType: "error", // 信息类别
+      userAgent: navigator.userAgent, // userAgent
+      pageUrl: window.location.href, // 上报页面地址
+      env: "dev", // 环境：dev、test、uat、pro
+
+      msg: "", // 错误的具体信息,
+      stack: "", // 错误堆栈信息
+      localStorageKey: "error_report_data", // localStorageKey
+      category: "", // 类别
+      data: {} // 更多错误信息
     };
 
-    this.config = {...defaultConfig, ...options};
+    Object.assign(this.options, ops);
 
-    if (!this.config.scriptError) {
-      this.config.filters.push(({title, msg, category}) => /^Script error\.?$/.test(title));
-    }
-
-    this.processFilters();
-
-    this.bindErrorHandle();
+    this.initErrorHandle();
   }
 
-  processFilters() {
-    // 处理过滤器
-    let oldSendError = this.config.sendError;
-    this.config.sendError = ({title, msg, category}) => {
-      try {
-        let isFilter = this.config.filters.some(func => {
-          return typeof func === 'function' && func({title, msg, category});
-        });
-        if (isFilter) {
-          return;
-        }
-        oldSendError({title, msg, category});
-      } catch (e) {
-        oldSendError({
-          title: e.toString(),
-          msg: e,
-          category: 'monitorError'
-        });
-      }
-    };
+
+
+  initErrorHandle() {
+    this.onJSError();
+    this.onResourceError();
+    this.onPromiseError();
+    this.onAjaxError();
+    this.onFetchError();
+    this.onCosoleError();
+    this.onVueError();
   }
 
-  bindErrorHandle() {
-    let config = this.config;
-    if (config.jsError) {
-      ErrorHandles.windowErrorHandle(config);
-      // https://developer.mozilla.org/zh-CN/docs/Web/Events/unhandledrejection
-      ErrorHandles.rejectPromiseHandle(config);
-    }
-    if (config.resourceError) {
-      ErrorHandles.resourceErrorHandle(config);
-    }
-    if (config.ajaxError) {
-      ErrorHandles.ajaxErrorHandle(config);
-    }
-    if (config.consoleError) {
-      ErrorHandles.consoleErrorHandle(config);
-    }
-    if (config.Vue) {
-      ErrorHandles.vueErrorHandle(config.Vue, config);
-    }
-  }
-}
-
-
-class ErrorHandles {
-  static windowErrorHandle(config) {
-    window.onerror = function (msg, url, line, col, error) {
-      if (typeof msg === 'string') {
-        config.sendError({
-          title: msg,
-          msg: {
-            resourceUrl: url,
-            rowNum: line,
-            colNum: col
-          },
-          category: 'windowError',
-        });
+  /**
+   * 监控 JS 错误，加载第三方JS出现
+   * 其中包括行列号，Error对象中存在错误的堆栈信息等。
+   */
+  onJSError() {
+    window.onerror = (msg, url, line, col, error) => {
+      if (msg === "Script error." && !url) {
+        return false;
       }
 
-      // if (error && error.stack) {
-      //     config.sendError({
-      //         title: msg,
-      //         msg: error.stack,
-      //         category: 'windowError',
-      //     });
-      // }
+      const reportData = { ...this.options };
+
+      // 不一定所有浏览器都支持col参数，如果不支持就用window.event来兼容
+      const colNum =
+        col || (window.event && window.event.errorCharacter) || 0;
+
+      if (error && error.stack) {
+        // msg信息较少,如果浏览器有追溯栈信息,使用追溯栈信息
+        reportData.msg = msg;
+        reportData.stack = error.stack;
+      } else {
+        reportData.msg = msg;
+        reportData.stack = "";
+      }
+
+      reportData.category = "JS_ERROR";
+      reportData.timeSpan = Date.now();
+      reportData.data = JSON.stringify({
+        fileName: url,
+        line: line,
+        col: colNum
+      });
+
+      this.send(reportData, this.options.reportUrl);
+
+      // 错误不会console浏览器上,如需要，可将这注释
+      // return true;
     };
   }
 
-  static rejectPromiseHandle(config) {
-    window.addEventListener('unhandledrejection', function (event) {
-      console.log('unhandledrejection:', event);
-      if (event) {
-        let reason = event.reason;
-        config.sendError({
-          title: reason,
-          msg: reason,
-          category: 'rejectPromise',
-        });
-      }
-    }, true);
-  }
-
-  static resourceErrorHandle(window, config) {
-    window.addEventListener('error', function (event) {
-      if (event) {
-        let target = event.target || event.srcElement;
+  /**
+   * 监控资源加载错误(img,script,css,以及jsonp)
+   * 其中包括行列号，Error对象中存在错误的堆栈信息等。
+   */
+  onResourceError() {
+    window.addEventListener(
+      "error",
+      e => {
+        const target = e.target || e.srcElement;
         let isElementTarget = target instanceof HTMLScriptElement || target instanceof HTMLLinkElement || target instanceof HTMLImageElement;
         if (!isElementTarget) {
-          return; // js error不再处理
+          // JS_ERROR 不再处理
+          return;
         }
+        // if (e.target === window) {
+        //   // 抛去js语法错误
+        //   return;
+        // }
 
+        const reportData = { ...this.options };
         let url = target.src || target.href;
-        config.sendError({
-          title: target.nodeName + ' => ' + url,
-          msg: url,
-          category: 'resourceError',
+        reportData.msg = `${e.target.localName}(${url})  is load error`;
+        reportData.stack = "resouce is not found";
+        reportData.category = "RESOURCE_ERROR";
+        reportData.data = JSON.stringify({
+          tagName: e.target.localName,
+          html: target.outerHTML,
+          type: e.type,
+          fileName: e.target.currentSrc,
+          url
         });
-      }
-    }, true);
+
+        this.send(reportData, this.options.reportUrl);
+      },
+      true
+    );
   }
 
-  static fetchErrorHandle(config) {
-    if (!window.fetch) {
-      return;
-    }
-    let oldFetch = window.fetch;
-    window.fetch = function () {
-      return oldFetch.apply(this, arguments)
-        .then(res => {
-          if (!res.ok) { // True if status is HTTP 2xx
-            config.sendError({
-              title: arguments[0],
-              msg: res,
-              category: 'fetchError',
-            });
-          }
-          return res;
-        })
-        .catch(error => {
-          config.sendError({
-            title: arguments[0],
-            msg: {
-              message: error.message,
-              stack: error.stack
-            },
-            category: 'fetchError',
-          });
-          throw error;
-        });
-    };
+  // 监控未捕获的promise异常
+  onPromiseError() {
+    window.addEventListener(
+      "unhandledrejection",
+      event => {
+        const reportData = { ...this.options };
+        // 错误信息
+        reportData.msg = event.reason || "";
+        reportData.category = "Promise";
+        reportData.stack = "Promise is Error";
+        this.send(reportData, this.options.reportUrl);
+        // 如果想要阻止继续抛出，即会在控制台显示 `Uncaught(in promise) Error` 的话，调用以下函数
+        event.preventDefault();
+      },
+      true
+    );
   }
 
-  static ajaxErrorHandle(config) {
-    let protocol = window.location.protocol;
-    if (protocol === 'file:') {
-      return;
-    }
-
-    // 处理fetch
-    this.fetchErrorHandle(config);
-
+  // Ajax请求错误监控
+  onAjaxError() {
     // 处理XMLHttpRequest
     if (!window.XMLHttpRequest) {
       return;
     }
-    let xmlHttp = window.XMLHttpRequest;
 
-    let oldSend = xmlHttp.prototype.send;
-    let _handleEvent = function (event) {
+    // 复制send方法
+    let oldSend = XMLHttpRequest.prototype.send;
+
+    let errorHandler = (event) => {
       if (event && event.currentTarget && event.currentTarget.status !== 200) {
         config.sendError({
           title: event.target.responseURL,
@@ -185,72 +161,226 @@ class ErrorHandles {
           },
           category: 'ajaxError',
         });
+        const reportData = { ...this.options };
+        reportData.msg = "AJAX 请求错误";
+        reportData.stack = `错误码：${event.currentTarget.status}`;
+        reportData.category = "AJAX_ERROR";
+        this.send(reportData);
       }
-    };
-    xmlHttp.prototype.send = function () {
+    }
+
+    // 重写send方法
+    XMLHttpRequest.prototype.send = function () {
       if (this['addEventListener']) {
-        this['addEventListener']('error', _handleEvent);
-        this['addEventListener']('load', _handleEvent);
-        this['addEventListener']('abort', _handleEvent);
+        this['addEventListener']('error', errorHandler);
+        this['addEventListener']('load', errorHandler);
+        this['addEventListener']('abort', errorHandler);
       } else {
-        let _oldStateChange = this['onreadystatechange'];
+        let oldStateChange = this['onreadystatechange'];
         this['onreadystatechange'] = function (event) {
           if (this.readyState === 4) {
-            _handleEvent(event);
+            errorHandler(event);
           }
-          _oldStateChange && _oldStateChange.apply(this, arguments);
+          oldStateChange && oldStateChange.apply(this, arguments);
         };
       }
       return oldSend.apply(this, arguments);
     };
   }
 
-  static consoleErrorHandle(config) {
+  // fetch请求错误
+  onFetchError() {
+    if (!window.fetch) {
+      return;
+    }
+    let oldFetch = window.fetch;
+    window.fetch = function () {
+      return oldFetch.apply(this, arguments)
+        .then(res => {
+          if (!res.ok) { // True if status is HTTP 2xx
+            const reportData = { ...this.options };
+            reportData.msg = `fetch 请求错误: ${res}`;
+            reportData.stack = `错误码：${arguments[0]}`;
+            reportData.category = "FETCH_ERROR";
+            this.send(reportData);
+          }
+          return res;
+        })
+        .catch(error => {
+          const reportData = { ...this.options };
+          reportData.msg = `fetch 请求错误: ${error.message}`;
+          reportData.stack = error.stack;
+          reportData.category = "FETCH_ERROR";
+          this.send(reportData);
+          throw error;
+        });
+    };
+  }
+
+  // console.error 错误
+  onCosoleError() {
     if (!window.console || !window.console.error) {
       return;
     }
 
     let oldConsoleError = window.console.error;
     window.console.error = function () {
-      config.sendError({
-        title: Array.prototype.join.call(arguments, ','),
-        msg: Array.prototype.join.call(arguments, ','),
-        category: 'consoleError',
-      });
+      const reportData = { ...this.options };
+      reportData.msg = `console error: ${Array.prototype.join.call(arguments, ',')}`;
+      reportData.category = "CONSOLE_ERROR";
+      this.send(reportData);
       oldConsoleError && oldConsoleError.apply(window, arguments);
     };
   }
 
-  static vueErrorHandle(Vue, config) {
+  // Vue 异常监控
+  onVueError() {
     if (!Vue || !Vue.config) {
       return;
     }
-    let oldVueError = Vue.config.errorHandler;
-    Vue.config.errorHandler = function (error, vm, info) {
-      let metaData = {};
-      if (Object.prototype.toString.call(vm) === '[object Object]') {
-        metaData.componentName = vm._isVue ? vm.$options.name || vm.$options._componentTag : vm.name;
-        metaData.propsData = vm.$options.propsData;
-      }
-      config.sendError({
-        title: error.toString(),
-        msg: {...metaData, info, error: error.toString()},
-        category: 'vueError',
-      });
+    Vue.config.errorHandler = (error, vm, info) => {
+      const componentName = this.formatComponentName(vm);
+      const propsData = vm.$options && vm.$options.propsData;
 
-      if (oldVueError && typeof oldVueError === 'function') {
-        oldVueError.call(this, error, vm, info);
-      }
+      const reportData = { ...this.options }
+      reportData.msg = error.message;
+      reportData.stack = this.processStackMsg(error);
+
+      reportData.category = "VUE_ERROR";
+      reportData.data = JSON.stringify({
+        componentName,
+        propsData,
+        info
+      });
+      this.send(reportData);
     };
+  }
+
+  /* eslint-disable class-methods-use-this */
+  processStackMsg(error) {
+    let stack = error.stack
+      .replace(/\n/gi, "") // 去掉换行，节省传输内容大小
+      .replace(/\bat\b/gi, "@") // chrome中是at，ff中是@
+      .split("@") // 以@分割信息
+      .slice(0, 9) // 最大堆栈长度（Error.stackTraceLimit = 10），所以只取前10条
+      .map(v => v.replace(/^\s*|\s*$/g, "")) // 去除多余空格
+      .join("~") // 手动添加分隔符，便于后期展示
+      .replace(/\?[^:]+/gi, ""); // 去除js文件链接的多余参数(?x=1之类)
+    const msg = error.toString();
+    if (stack.indexOf(msg) < 0) {
+      stack = msg + "@" + stack;
+    }
+    return stack;
+  }
+
+  /* eslint-disable class-methods-use-this */
+  formatComponentName(vm) {
+    if (vm.$root === vm) {
+      return "root";
+    }
+    const name = vm._isVue
+      ? (vm.$options && vm.$options.name) ||
+      (vm.$options && vm.$options._componentTag)
+      : vm.name;
+    return (
+      (name ? "component <" + name + ">" : "anonymous component") +
+      (vm._isVue && vm.$options && vm.$options.__file
+        ? " at " + (vm.$options && vm.$options.__file)
+        : "")
+    );
+  }
+
+  /**
+  * 数据发送
+  */
+  send(data, reportUrl) {
+    if (navigator.sendBeacon) {
+      return this.sendByBeacon(data, reportUrl);
+    }
+    this.sendByImage(data, reportUrl);
+  }
+
+  sendByBeacon(data, reportUrl) {
+    navigator.sendBeacon(reportUrl, JSON.stringify(data));
+  }
+
+  sendByImage(data, reportUrl) {
+    const image = new Image();
+    const queryStr = Object.entries(data).map(([key, val]) => `${key}=${val}`).join('&')
+    image.src = `${reportUrl}?${queryStr}`;
   }
 }
 
 
-// new ErrorMonitor({
-//     Vue,
-//     jsError: true,
-//     consoleError: true,
-//     sendError: function ({title, msg, category}) {
-//         new Image().src = `https://report.uri.com?title=${title}&msg=${msg}&category=${category}`;
-//     }
-// });
+/**
+ * 获取浏览器类型
+ */
+function getBrowser() {
+  // 取得浏览器的userAgent字符串
+  const userAgent = navigator.userAgent;
+  let isOpera = false;
+
+  // 判断是否Opera浏览器
+  if (userAgent.indexOf("Opera") > -1) {
+    isOpera = true;
+    return "Opera";
+  }
+  // 判断是否Firefox浏览器
+  if (userAgent.indexOf("Firefox") > -1) {
+    return "Firefox";
+  }
+  // 判断是否Chrome浏览器
+  if (userAgent.indexOf("Chrome") > -1) {
+    return "Chrome";
+  }
+  // 判断是否Safari浏览器
+  if (userAgent.indexOf("Safari") > -1) {
+    return "Safari";
+  }
+  // 判断是否IE浏览器
+  if (
+    userAgent.indexOf("compatible") > -1 &&
+    userAgent.indexOf("MSIE") > -1 &&
+    !isOpera
+  ) {
+    return "IE";
+  }
+  // 判断是否QQ浏览器
+  if (userAgent.match(/MQQBrowser\/([\d.]+)/i)) {
+    return "QQBrower";
+  }
+  return "Other";
+}
+
+/**
+ * 获取设备是安卓、 IOS 还是PC端
+ */
+function getDevices() {
+  const ua = navigator.userAgent;
+  let isIPad = false;
+  let isIPod = false;
+
+  if (ua.match(/(Android)\s+([\d.]+)/i)) {
+    return "Android";
+  }
+  if (ua.match(/(iPad).*OS\s([\d_]+)/i)) {
+    isIPad = true;
+    return "iPad";
+  }
+  if (ua.match(/(iPod).*OS\s([\d_]+)/i)) {
+    isIPod = true;
+    return "iPod";
+  }
+  if (!isIPad && !isIPod && ua.match(/(iPhone\sOS)\s([\d_]+)/i)) {
+    return "iPhone";
+  }
+  return "PC";
+}
+
+
+export const plugin = {
+  install(Vue, options) {
+    /* eslint-disable no-new */
+    new ErrorReport(options);
+  }
+}

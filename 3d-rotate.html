@@ -1,9 +1,10 @@
 <html>
+
 <head>
   <title>3D翻牌效果 </title>
   <meta charset="UTF-8">
   <script>
-    window.addEventListener(('orientationchange' in window ? 'orientationchange' : 'resize'), (function() {
+    window.addEventListener(('orientationchange' in window ? 'orientationchange' : 'resize'), (function () {
       function c() {
         var d = document.documentElement;
         var cw = d.clientWidth || 640;
@@ -127,88 +128,88 @@
 </head>
 
 <body>
-<div class="outer">
-  <div class="flip">
-    <div class="div1">div11111</div>
-    <div class="div2">div22222</div>
+  <div class="outer">
+    <div class="flip">
+      <div class="div1">div11111</div>
+      <div class="div2">div22222</div>
+    </div>
+    <div class="flip">
+      <div class="div1">div11111</div>
+      <div class="div2">div22222</div>
+    </div>
+    <div class="flip">
+      <div class="div1">div11111</div>
+      <div class="div2">div22222</div>
+    </div>
+    <div class="flip">
+      <div class="div1">div11111</div>
+      <div class="div2">div22222</div>
+    </div>
+    <div class="flip">
+      <div class="div1">div11111</div>
+      <div class="div2">div22222</div>
+    </div>
+    <div class="flip">
+      <div class="div1">div11111</div>
+      <div class="div2">div22222</div>
+    </div>
   </div>
-  <div class="flip">
-    <div class="div1">div11111</div>
-    <div class="div2">div22222</div>
-  </div>
-  <div class="flip">
-    <div class="div1">div11111</div>
-    <div class="div2">div22222</div>
-  </div>
-  <div class="flip">
-    <div class="div1">div11111</div>
-    <div class="div2">div22222</div>
-  </div>
-  <div class="flip">
-    <div class="div1">div11111</div>
-    <div class="div2">div22222</div>
-  </div>
-  <div class="flip">
-    <div class="div1">div11111</div>
-    <div class="div2">div22222</div>
-  </div>
-</div>
 
-<script>
-  (function() {
-    let flips = document.querySelectorAll('.flip');
-    let flipsLen = flips.length;
-    let outer = document.querySelector('.outer');
+  <script>
+    (function () {
+      let flips = document.querySelectorAll('.flip');
+      let flipsLen = flips.length;
+      let outer = document.querySelector('.outer');
 
-    // 数组乱序
-    function shuffle(arr) {
-      let result = [];
-      while (arr.length) {
-        let index = ~~(Math.random() * arr.length);
-        result.push(arr[index]);
-        arr.splice(index, 1);
-      }
-      return result;
-    }
-
-    // 创建一个长度为len的数组，并且每个元素的值等于它的下标
-    function createArr(len) {
-      return [...new Array(len).keys()];
-    }
-
-    outer.addEventListener('click', function(e) {
-      let ep = e.target.parentNode;
-      console.log(e.target, this, ep);
-      if (ep.classList.contains('flip')) {
-        ep.classList.toggle('active');
-      }
-      let sleep = function(time) {
-        return new Promise(function(resolve, reject) {
-          setTimeout(function() {
-            resolve();
-          }, time);
-        });
-      };
-      (async function() {
-        console.log('start');
-        await sleep(1000);
-        let shuffleFlipsIndex = shuffle(createArr(flipsLen));
-        for (let i = 0; i < flipsLen; i++) {
-          let time = parseInt(Math.random() * 600);
-          await sleep(time);
-          flips[shuffleFlipsIndex[i]].classList.add('active');
-          console.log(i);
+      // 数组乱序
+      function shuffle(arr) {
+        let result = [];
+        while (arr.length) {
+          let index = ~~(Math.random() * arr.length);
+          result.push(arr[index]);
+          arr.splice(index, 1);
         }
-        await sleep(800);
-        for (let i = 0; i < flipsLen; i++) {
-          flips[i].classList.add('act');
+        return result;
+      }
+
+      // 创建一个长度为len的数组，并且每个元素的值等于它的下标
+      function createArr(len) {
+        return [...new Array(len).keys()];
+      }
+
+      outer.addEventListener('click', function (e) {
+        let ep = e.target.parentNode;
+        console.log(e.target, this, ep);
+        if (ep.classList.contains('flip')) {
+          ep.classList.toggle('active');
         }
-        ep.classList.add('selected');
-        console.log('end');
-      })();
-    });
-  })();
-</script>
+        let sleep = function (time) {
+          return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+              resolve();
+            }, time);
+          });
+        };
+        (async function () {
+          console.log('start');
+          await sleep(1000);
+          let shuffleFlipsIndex = shuffle(createArr(flipsLen));
+          for (let i = 0; i < flipsLen; i++) {
+            let time = parseInt(Math.random() * 600);
+            await sleep(time);
+            flips[shuffleFlipsIndex[i]].classList.add('active');
+            console.log(i);
+          }
+          await sleep(800);
+          for (let i = 0; i < flipsLen; i++) {
+            flips[i].classList.add('act');
+          }
+          ep.classList.add('selected');
+          console.log('end');
+        })();
+      });
+    })();
+  </script>
 </body>
 
 </html>

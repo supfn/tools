@@ -1,38 +1,45 @@
 <html>
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
 </head>
-<body>
-<img src="" alt="" id="img">
 
-<script>
-  // http://h5.pinbs.cn/www-img/by.png
-  window.onload = () => {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://h5.pinbs.cn/www-img/by.png');
-    xhr.responseType = 'blob';
-    xhr.onreadystatechange = () => {
-      if (~~xhr.readyState === 4) {
-        let status = xhr.status;
-        if (status >= 200 && status < 300) {
-          let blob = new Blob([xhr.response], {type: 'image/jpeg'});
-          let src = URL.createObjectURL(blob);
-          let img = document.querySelector('#img');
-          img.src = src;
-          img.onload = function(e) {
-            window.URL.revokeObjectURL(img.src);//释放。
-          };
-        } else {
-          console.error(status);
+<body>
+  <img src="" alt="" id="img">
+
+  <script>
+    window.onload = () => {
+      let xhr = new XMLHttpRequest();
+      let imgUrl = 'http://cdn.jsdelivr.net/gh/supfn/images/css/202306121821599.png';
+      xhr.responseType = 'blob';
+      xhr.onreadystatechange = () => {
+        if (~~xhr.readyState === 4) {
+          let status = xhr.status;
+          if (status >= 200 && status < 300) {
+            let blob = new Blob([xhr.response], { type: 'image/jpeg' });
+            let src = URL.createObjectURL(blob);
+            let img = document.querySelector('#img');
+            img.src = src;
+            img.onload = function (e) {
+              window.URL.revokeObjectURL(img.src);//释放。
+            };
+          } else {
+            console.error(status);
+          }
         }
+      };
+      try {
+        xhr.open("GET", `${imgUrl}`, true);
+        xhr.send(null)
+      } catch (e) {
+        console.log(e)
       }
     };
-    xhr.send(null);
-  };
-</script>
+  </script>
 </body>
+
 </html>

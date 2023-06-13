@@ -19,16 +19,18 @@ return {
 
 * */
 
-const isObject = val =>  Object.prototype.toString.call(val) === "[object Object]"
-function flattenMap(map){
+const isObject = val => Object.prototype.toString.call(val) === "[object Object]";
+
+function flattenMap(map) {
   const result = {};
+
   const loop = (map, path) => {
     Object.keys(map).forEach(key => {
-     if(isObject(map[key])){
-       loop(map[key], `${path}${key}/`)
-     }else{
-       result[`${path}${key}`] = map[key]
-     }
+      if (isObject(map[key])) {
+        loop(map[key], `${path}${key}/`)
+      } else {
+        result[`${path}${key}`] = map[key]
+      }
     })
   }
   loop(map, '');
