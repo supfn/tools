@@ -40,7 +40,6 @@ test1();
 
 
 // 2.	两个超大浮点数相加
-
 function addTwoBigFloat(s1, s2) {
   let n1Arr = s1.split('.')[1].split('').map(Number);
   let n2Arr = s2.split('.')[1].split('').map(Number);

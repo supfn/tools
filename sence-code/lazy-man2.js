@@ -22,29 +22,28 @@
 // 以此类推。
 //
 
-
 function LazyMan(name) {
   if (!(this instanceof LazyMan)) {
     return new LazyMan(name);
   }
-  this._taskQueue = [];
+  this.taskQueue = [];
   let f = () => {
     console.log(`hello, ${name}`);
     this.next();
   };
-  this._taskQueue.push(f);
+  this.taskQueue.push(f);
   setTimeout(this.next.bind(this), 0);
 }
 LazyMan.prototype = {
   next() {
-    if (this._taskQueue.length) {
-      let task = this._taskQueue.shift();
+    if (this.taskQueue.length) {
+      let task = this.taskQueue.shift();
       task();
     }
   },
   sleep(ms) {
     let f = () => setTimeout(this.next.bind(this), ms);
-    this._taskQueue.push(f);
+    this.taskQueue.push(f);
     return this;
   },
   eat(something) {
@@ -52,12 +51,12 @@ LazyMan.prototype = {
       console.log(`eat ${something}`);
       this.next();
     };
-    this._taskQueue.push(f);
+    this.taskQueue.push(f);
     return this;
   },
   sleepFirst(ms) {
     let f = () => setTimeout(this.next.bind(this), ms);
-    this._taskQueue.unshift(f);
+    this.taskQueue.unshift(f);
     return this;
   },
 };

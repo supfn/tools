@@ -1,12 +1,10 @@
-/*
-   实现模板字符串
-   const a = {
-      b: 'c',
-      d: [{ e: 123 }]
-    };
-   const str = 'hello, ${b}, ${d[0].e}';
-   compile(str, a); // 'hello, c, 123'
-*/
+/**
+ * 实现模板字符串
+ * 
+ * @param {String} str 
+ * @param {Object} data 
+ * @returns 
+ */
 
 function compile(str, data) {
   let reg = /\${(.*?)}/;
@@ -25,3 +23,15 @@ function compile(str, data) {
   }
   return str;
 }
+
+function test() {
+  const a = {
+    b: 'c',
+    d: [{ e: 123 }]
+  };
+  const str = 'hello, ${b}, ${d[0].e}';
+  let ret = compile(str, a); // 'hello, c, 123'
+  console.log(ret);
+}
+
+test();

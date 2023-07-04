@@ -49,7 +49,8 @@ const sortTree = (list) => {
 
 // 测试代码
 function test() {
-  console.log(sortTree(listTree));
+  let ret = JSON.stringify(sortTree(listTree), null, 2)
+  console.log(ret);
 }
 
 test();

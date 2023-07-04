@@ -1,51 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>VirtualDom</title>
 </head>
+
 <body>
-<script>
-  class CustomElement {
-    /**
-     * @param {String}  tagName     标签名
-     * @param {Object}  props       元素的属性对象
-     * @param {Array}   children    子节点
-     */
-    constructor(tagName, props = {}, children = []) {
+  <script>
+
+    function createElement(vnode) {
+      let tagName = vnode.tagName;
+      let props = vnode.props || {};
+      let children = vnode.children || [];
       if (typeof tagName !== 'string' || tagName.length === 0) {
-        throw new Error('Please input correct tag name');
+        return null
       }
-      this.tagName = tagName;
-      this.props = props;
-      this.children = children;
-    }
-
-    render() {
-      let el = document.createElement(this.tagName);
-      let props = this.props;
-      let children = this.children;
-
+      let el = document.createElement(tagName);
       for (let propName in props) {
         let propValue = props[propName];
         el.setAttribute(propName, propValue);
       }
-
-      children.forEach(function(child) {
-        let childEl = (child instanceof CustomElement) ? child.render() : document.createTextNode(child);
+      children.forEach(child => {
+        let childEl = (child instanceof VNode) ? createElement(child) : document.createTextNode(child);
         el.appendChild(childEl);
       });
       return el;
-    };
-  }
+    }
 
-  let ul = new CustomElement('ul', {id: 'list'}, [
-    new CustomElement('li', {class: 'item'}, ['item1']),
-    new CustomElement('li', {class: 'item'}, ['item2']),
-    new CustomElement('li', {class: 'item'}, ['item3']),
-  ]);
-  let ulRoot = ul.render();
-  document.body.appendChild(ulRoot);
-</script>
+    function updateChildren(vnode, newVnode) {
+      let children = vnode.children || [];
+      let newChildren = newVnode.children || [];
+      // 遍历现有的children      
+      children.forEach((childVnode, index) => {
+        let newChildVnode = newChildren[index]
+        // 两者tag一样           
+        if (childVnode.tag === newChildVnode.tag) {
+          // 深层次对比，递归              
+          updateChildren(childVnode, newChildVnode)
+        } else {
+          // 两者tag不一样             
+          replaceNode(childVnode, newChildVnode)
+        }
+      })
+    }
+
+    class VNode {
+      /**
+       * @param {String}  tagName     标签名
+       * @param {Object}  props       元素的属性对象
+       * @param {Array}   children    子节点
+       */
+      constructor(tagName, props = {}, children = []) {
+        if (typeof tagName !== 'string' || tagName.length === 0) {
+          throw new Error('Please input correct tag name');
+        }
+        this.tagName = tagName;
+        this.props = props;
+        this.children = children;
+      }
+      render() {
+        return createElement(this);
+      };
+    }
+
+    let ul = new VNode('ul', { id: 'list' }, [
+      new VNode('li', { class: 'item' }, ['item1']),
+      new VNode('li', { class: 'item' }, ['item2']),
+      new VNode('li', { class: 'item' }, ['item3']),
+    ]);
+    let ulElem = ul.render();
+    document.body.appendChild(ulElem);
+
+  </script>
 </body>
+
 </html>

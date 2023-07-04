@@ -26,30 +26,30 @@ function LazyMan(name) {
   if (!(this instanceof LazyMan)) {
     return new LazyMan(name);
   }
-  this._taskQueue = [];
+  this.taskQueue = [];
   let f = () => Promise.resolve().then(() => console.log(`hello, ${name}`));
-  this._taskQueue.push(f);
+  this.taskQueue.push(f);
   setTimeout(this.execute.bind(this), 0);
 }
 
 LazyMan.prototype = {
   sleep: function (ms) {
     let f = () => new Promise(resolve => setTimeout(resolve, ms));
-    this._taskQueue.push(f);
+    this.taskQueue.push(f);
     return this;
   },
   eat: function (something) {
     let f = () => Promise.resolve().then(() => console.log(`eat ${something}`));
-    this._taskQueue.push(f);
+    this.taskQueue.push(f);
     return this;
   },
   sleepFirst: function (ms) {
     let f = () => new Promise(resolve => setTimeout(resolve, ms));
-    this._taskQueue.unshift(f);
+    this.taskQueue.unshift(f);
     return this;
   },
   execute: function () {
-    this._taskQueue.reduce((pre, next) => pre.then(next), Promise.resolve());
+    this.taskQueue.reduce((pre, next) => pre.then(next), Promise.resolve());
   }
 };
 

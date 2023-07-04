@@ -1,10 +1,9 @@
-// 批量请求处理：ConcurrencyRequest
-//
-//
-// 1. 批量请求处理，限制最大并发数limit。
-// 2. 每当有一个请求返回，就留下一个空位，可以增加新的请求。
-// 3. 所有请求完成后，结果按照urls里面的顺序依次打出。
-//
+/**
+ * 批量请求处理：ConcurrencyRequest
+ * 1. 批量请求处理，限制最大并发数limit。
+ * 2. 每当有一个请求返回，就留下一个空位，可以增加新的请求。
+ * 3. 所有请求完成后，结果按照urls里面的顺序依次打出。
+ */
 class ConcurrencyRequest {
   /**
    * 
@@ -49,30 +48,28 @@ class ConcurrencyRequest {
     this.run();
   }
 
-  // 请求处理实际根据情况具体实现
   fetch(url) {
+    // fetch请求方法 mock
+    const fetch = function (idx) {
+      return new Promise(resolve => {
+        console.log('request: ', idx);
+        const timeout = parseInt(Math.random() * 1e3);
+        setTimeout(() => {
+          let res = `res-${idx}`;
+          console.log('response: ', res);
+          resolve(res);
+        }, timeout);
+      });
+    };
     return fetch(url);
   }
 }
-
-// fetch请求mock
-const fetch = function (idx) {
-  return new Promise(resolve => {
-    console.log('request: ', idx);
-    const timeout = parseInt(Math.random() * 1e3);
-    setTimeout(() => {
-      let res = `res-${idx}`;
-      console.log('response: ', res);
-      resolve(res);
-    }, timeout);
-  });
-};
 
 
 // 测试代码：
 function test() {
   const urls = Array.from({ length: 10 }, (v, k) => k);
-  const limit = 2;
+  const limit = 3;
   const callback = (res) => {
     console.log('finished callback: ', res);
   };

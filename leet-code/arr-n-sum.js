@@ -1,5 +1,11 @@
-// 求给定数组arr中n个数相加之和为sum的所有可能集合, 返回一个二维数组
-// [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];   =>  [[1,9],[2,8],[3,7],[4,6]]
+// 题目：求给定数组arr中n个数相加之和为sum的所有可能集合, 返回一个二维数组
+/**
+ * cur = arr[i]
+ * n=1, cur === sum,  [[sum]]
+ * n=2, cur + fn(arr.slice(i), 1 ,sum-cur) === sum
+ * n=3, cur + fn(arr.slice(i),n-1, sum-cur)
+ * ...
+ */
 
 /**
  *
@@ -10,7 +16,7 @@
  */
 function fn(arr, n, sum) {
   // arr = arr.sort((a, b) => a - b).filter(val => val<=sum);
-  arr = arr.filter(val => val <= sum);
+  // arr = arr.filter(val => val <= sum);
   let ret = [];
   if (n === 1 && arr.indexOf(sum) !== -1) {
     return [[sum]];
@@ -26,20 +32,11 @@ function fn(arr, n, sum) {
   return ret;
 }
 
-/*
-cur = arr[i]
-
-n=1, cur === sum,  [[sum]]
-n=2, cur + fn(arr.slice(i), 1 ,sum-cur) === sum
-n=3, cur + fn(arr.slice(i),n-1, sum-cur)
-
- */
-
 console.time('fnTime');
 let arr = [...Array(20).keys()].slice(1);
-let _n = 4;
+let n = 4;
 let sum = 20;
-let result = fn(arr, _n, sum);
-console.log(result ,result.length);
+let result = fn(arr, n, sum);
+console.log(result, result.length);
 console.timeEnd('fnTime');
 

@@ -3,22 +3,35 @@ function isType(type) {
   return (val) => Object.prototype.toString.call(val).slice(8, -1) === type;
 }
 
-function clone(obj) {
-  if (obj === null) {
-    return null;
-  }
-  if (typeof obj !== "object") {
-    return obj;
-  }
-  let newObj = obj.constructor === Array ? [] : {};
-  if (window.JSON) {
-    newObj = JSON.parse(JSON.stringify(obj));
-  } else {
-    for (let i in obj) {
-      newObj[i] = clone(obj[i]);
+// 深拷贝
+function deepClone(obj) {
+  // 引入weakmap对Object类型数据进行标记
+  const map = new WeakMap();
+  map.set(obj, true);
+  const isObj = obj => typeof obj === 'object' && obj !== null;
+  const clone = (source) => {
+    if (!isObj(source)) {
+      return source;
     }
+    // 如果拷贝过的Object直接返回
+    if (map.get(source)) {
+      return source
+    }
+
+    let result = Array.isArray(source) ? [] : {};
+    map.set(source, result);
+    // Reflect.ownKeys 是 Object.getOwnPropertyNames 和 Object.getOwnPropertySymbols 的并集
+    for (let key of Reflect.ownKeys(source)) {
+      result[key] = clone(result[key]);
+    }
+    return result;
   }
-  return newObj;
+  return clone(obj);
+}
+
+// 深比较
+function deepEqual(obj1, obj2) {
+  // todo: 实现
 }
 
 // 数组去重
@@ -108,11 +121,11 @@ function cuter2(str) {
 // 数组乱序 - 1
 function shuffle1(arr) {
   let result = [];
-  let _arr = arr.slice();
-  while (_arr.length) {
-    let index = ~~(Math.random() * _arr.length);
-    result.push(_arr[index]);
-    _arr.splice(index, 1);
+  let sArr = arr.slice();
+  while (sArr.length) {
+    let index = ~~(Math.random() * sArr.length);
+    result.push(sArr[index]);
+    sArr.splice(index, 1);
   }
   return result;
 }
@@ -126,14 +139,14 @@ function shuffle2(arr) {
 
 // 数组乱序 - 3
 function shuffle3(arr) {
-  let _arr = arr.concat();
-  for (let i = _arr.length; i--; ) {
+  let sArr = arr.concat();
+  for (let i = sArr.length; i--;) {
     let j = Math.floor(Math.random() * (i + 1));
-    let temp = _arr[i];
-    _arr[i] = _arr[j];
-    _arr[j] = temp;
+    let temp = sArr[i];
+    sArr[i] = sArr[j];
+    sArr[j] = temp;
   }
-  return _arr;
+  return sArr;
 }
 
 // 数组乱序 - 4

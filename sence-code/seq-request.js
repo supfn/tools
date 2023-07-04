@@ -1,87 +1,92 @@
-// 可控时序请求，请求分为2类 biz(业务请求) 与 track(埋点请求)； 
-// 请求并发数为5，要求 biz 请求优先于 track 请求
-//
-// seqRequest
-//
-//
-//
-
-const fetch = function (params) {
-  return new Promise(resolve => {
-    console.log('request params: ', params);
-    const timeout = parseInt(Math.random() * 1e3);
-    setTimeout(() => {
-      console.log('response: ', `res: ${params}`);
-      resolve(`res: ${params}`);
-    }, timeout);
-  });
-};
-
+/**
+ * 可控时序请求，请求分为2类 biz(业务请求) 与 track(埋点请求)，要求biz优先于track
+ * 请求并发数为5，要求 biz 请求优先于 track 请求
+ */
 class SeqRequest {
   static bizQueue = [];
   static trackQueue = [];
   static limit = 5; // 限制并发数量
   static requesttingNums = 0;
 
-  static fetch(params) {
-    this.requesttingNums++;
-    return fetch(params)
-      .then(res => res)
-      .catch(e => e)
-      .finally(() => {
-        this.requesttingNums--;
-        this.poll()
-      })
+  request(params) {
+    let task = this.createTask(params);
+    return this.runTask(task);
   }
 
-  static request(params) {
+  createTask(params) {
+    let task = {};
+    task.promise = new Promise((resolve, reject) => {
+      task.resolve = resolve;
+      task.reject = reject;
+    })
+    task.params = params;
+    return task;
+  }
+
+  runTask(task) {
     if (this.requesttingNums < this.limit) {
-      return this.fetch(params);
+      this.requesttingNums++;
+      let promise = this.fetch(task.params);
+      promise
+        .then(data => task.resolve(data))
+        .catch(e => task.catch(e))
+        .finally(() => {
+          this.requesttingNums--;
+          this.nextTask();
+        });
+      return promise;
     }
-    const type = params.type;
-    if (type === 'biz') {
-      const queueData = { params }
-      queueData.promise = new Promise((resolve, reject) => {
-        queueData.resolve = resolve;
-        queueData.reject = reject;
-      })
-      this.bizQueue.push(queueData);
-      return queueData.promise;
+
+    if (task.params.type === 'biz') {
+      this.bizQueue.push(task);
     }
-    if (type === 'track') {
-      const queueData = { params }
-      queueData.promise = new Promise((resolve, reject) => {
-        queueData.resolve = resolve;
-        queueData.reject = reject;
-      })
-      this.trackQueue.push(queueData);
-      return queueData.promise;
+
+    if (task.params.type === 'track') {
+      this.trackQueue.push(task);
     }
+
+    return task.promise;
   }
 
-  static poll() {
+  nextTask() {
+    let task;
     if (this.bizQueue.length) {
-      const queueData = bizQueue.shift();
-      return this.fetch(queueData.params)
-        .then(queueData.resolve)
-        .catch(queueData.reject)
+      task = this.bizQueue.shift();
     } else if (this.trackQueue.length) {
-      const queueData = this.trackQueue.shift();
-      return this.fetch(queueData.params)
-        .then(queueData.resolve)
-        .catch(queueData.reject)
+      task = this.trackQueue.shift();
+    } else {
+      return;
     }
+    this.runTask(task);
+  }
+
+  fetch(params) {
+    const fetch = function (params) {
+      return new Promise(resolve => {
+        console.log('request params: ', params);
+        const timeout = parseInt(Math.random() * 1e3);
+        setTimeout(() => {
+          console.log('response: ', `res: ${params}`);
+          resolve(`res: ${params}`);
+        }, timeout);
+      });
+    };
+    return fetch(params);
   }
 }
 
 
 
 // 调用例子
-SeqRequest.request({
-  type: 'biz',
-  url: '',
-  data: {},
-  header: {},
-  succeess: () => { },
-  fail: () => { }
-})
+function test() {
+  let seqRequest = new SeqRequest();
+  seqRequest.request({
+    type: 'biz',
+    url: '',
+    data: {},
+    header: {},
+    succeess: () => { },
+    fail: () => { }
+  })
+}
+test();
