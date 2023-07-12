@@ -6,8 +6,8 @@
 
 class ES6Map {
   constructor(iterator) {
-    this._keys = [];
-    this._values = [];
+    this.keys = [];
+    this.values = [];
     if (iterator && iterator[Symbol.iterator]) {
       for (let item of iterator) {
         this.set(item[0], item[1]);
@@ -16,35 +16,35 @@ class ES6Map {
   }
 
   get size() {
-    return this._keys.length;
+    return this.keys.length;
   }
 
   set(key, value) {
-    let index = this._keys.indexOf(key);
+    let index = this.keys.indexOf(key);
     if (index === -1) {
-      this._keys.push(key);
-      this._values.push(value);
+      this.keys.push(key);
+      this.values.push(value);
     } else {
-      this._values[index] = value;
+      this.values[index] = value;
     }
     return this;
   }
 
   get(key) {
-    let index = this._keys.indexOf(key);
-    return index === -1 ? undefined : this._values[index];
+    let index = this.keys.indexOf(key);
+    return index === -1 ? undefined : this.values[index];
   }
 
   has(key) {
-    let index = this._keys.indexOf(key);
+    let index = this.keys.indexOf(key);
     return index !== -1;
   }
 
   delete(key) {
     try {
-      let index = this._keys.indexOf(key);
-      this._keys.splice(index, 1);
-      this._values.splice(index, 1);
+      let index = this.keys.indexOf(key);
+      this.keys.splice(index, 1);
+      this.values.splice(index, 1);
       return true;
     } catch (e) {
       return false;
@@ -52,25 +52,25 @@ class ES6Map {
   }
 
   clear() {
-    this._keys = [];
-    this._values = [];
+    this.keys = [];
+    this.values = [];
   }
 
   keys() {
-    return this._keys;
+    return this.keys;
   }
 
   values() {
-    return this._values;
+    return this.values;
   }
 
   entries() {
-    return this._keys.map((key, index) => [key, this._values[index]]);
+    return this.keys.map((key, index) => [key, this.values[index]]);
   }
 
   forEach(cb, ctx) {
-    this._keys.forEach((value, index) => {
-      cb.call(ctx, this._values[index], value, this);
+    this.keys.forEach((value, index) => {
+      cb.call(ctx, this.values[index], value, this);
     });
   }
 }
