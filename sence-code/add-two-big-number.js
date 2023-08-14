@@ -1,30 +1,25 @@
-// 1.	两个大数相加
-function addTwoBigNumber(n1, n2) {
-  let n1Arr = n1.split('').map(Number);
-  let n2Arr = n2.split('').map(Number);
-  let n1ArrLen = n1Arr.length;
-  let n2ArrLen = n2Arr.length;
-  let maxLen = Math.max(n1ArrLen, n1ArrLen);
-  if (n1ArrLen < n2ArrLen) {
-    n1Arr = Array(maxLen - n1ArrLen).fill(0).concat(n1Arr)
-  }
-  if (n2ArrLen < n1ArrLen) {
-    n2Arr = Array(maxLen - n2ArrLen).fill(0).concat(n2Arr)
-  }
+/**
+ * 题目：两个大数相加
+ * 
+ * 解题思路：
+ * 1. 较短的数字字符前置补零，补到二者长度相同
+ * 2. 逐位相加，记录进位carry，记录结果到结果数组
+ * 3. 最后将结果数组转字符
+ */
+function addTwoBigNumber(num1, num2) {
+  let max = Math.max(num1.length, num2.length);
+  num1 = num1.padStart(max, '0');
+  num2 = num2.padStart(max, '0')
   let carry = 0;
-  let result = new Array(maxLen);
-  for (let i = maxLen - 1; i >= 0; i--) {
-    let num = n1Arr[i] + n2Arr[i] + carry;
-    if (num >= 10) {
-      carry = 1;
-      num = num % 10;
-    } else {
-      carry = 0
-    }
+  let result = new Array(max);
+  for (let i = max - 1; i >= 0; i--) {
+    let sum = Number(num1[i]) + Number(num2[i]) + carry;
+    carry = Math.floor(sum / 10);
+    let num = sum % 10;
     result[i] = num;
   }
-  if (carry > 0) {
-    result.unshift(carry);
+  if (carry !== 0) {
+    result.unshift(carry)
   }
   return result.join('');
 }

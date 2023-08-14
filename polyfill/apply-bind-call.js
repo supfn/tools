@@ -17,7 +17,7 @@ var foo = {w
 };
 foo.bar(); // 1
 */
-Function.prototype._call = function(ctx, ...args) {
+Function.prototype._call = function (ctx, ...args) {
   let fn = this;
   ctx = ctx || window;
   ctx.fn = fn;
@@ -27,7 +27,7 @@ Function.prototype._call = function(ctx, ...args) {
 };
 
 
-Function.prototype._apply = function(ctx, args) {
+Function.prototype._apply = function (ctx, args) {
   let fn = this;
   ctx = ctx || window;
   ctx.fn = fn;
@@ -36,15 +36,11 @@ Function.prototype._apply = function(ctx, args) {
   return result;
 };
 
-Function.prototype._bind = function(ctx, args) {
+Function.prototype._bind = function (ctx, args) {
   let fn = this;
-  if (typeof fn !== 'function') {
-    throw new TypeError(
-      'Function.prototype.bind - what is trying to be bound is not callable');
-  }
 
-  let F = function() {};
-  let bound = function(...args2) {
+  let F = function () { };
+  let bound = function (...args2) {
     const mergedArgs = args.concat(args2);
     fn.apply(F.prototype.isPrototypeOf(this) ? this : ctx, mergedArgs);
   };

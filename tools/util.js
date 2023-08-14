@@ -7,22 +7,21 @@ function isType(type) {
 function deepClone(obj) {
   // 引入weakmap对Object类型数据进行标记
   const map = new WeakMap();
-  map.set(obj, true);
   const isObj = obj => typeof obj === 'object' && obj !== null;
   const clone = (source) => {
     if (!isObj(source)) {
       return source;
     }
     // 如果拷贝过的Object直接返回
-    if (map.get(source)) {
-      return source
+    if (map.has(source)) {
+      return map.get(source)
     }
 
     let result = Array.isArray(source) ? [] : {};
     map.set(source, result);
     // Reflect.ownKeys 是 Object.getOwnPropertyNames 和 Object.getOwnPropertySymbols 的并集
     for (let key of Reflect.ownKeys(source)) {
-      result[key] = clone(result[key]);
+      result[key] = clone(source[key]);
     }
     return result;
   }
