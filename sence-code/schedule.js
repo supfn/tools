@@ -1,4 +1,30 @@
-// 设计一个简单的异步任务队列执行器，要求执行并发数为 2
+/*
+// 题目：设计一个简单的异步任务队列执行器，要求执行并发数为 2
+
+class Scheduler {
+  constructor() {
+      this.limitCnt = 2; // 并发数
+  }
+
+  run(fn){
+    
+  }
+}
+
+function test() {
+  const generatePromise = (time, data) => new Promise(resolve => setTimeout(resolve, time, data));
+  const scheduler = new Scheduler();
+
+  scheduler.run(() => generatePromise(400,4)).then(data=>console.log(data));
+  scheduler.run(() => generatePromise(200,2)).then(data=>console.log(data));
+  scheduler.run(() => generatePromise(400,3)).then(data=>console.log(data));
+  scheduler.run(() => generatePromise(100,1)).then(data=>console.log(data));
+}
+
+test(); // 打印结果: 2 4 1 3
+*/
+
+
 class Scheduler {
   constructor() {
       this.limit = 2;
