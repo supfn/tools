@@ -1,3 +1,4 @@
+// 使用原生对象 XMLHttpRequest 实现 JS 请求库封装
 class Requset {
   static formatParams(map) {
     let arr = [];
