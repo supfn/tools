@@ -1,8 +1,8 @@
-/* 
-// 题目：实现一个请求错误重试函数 fetchWithRetry，要求会最多自动重试 3 次，任意一次成功就直接返回，返回结果为promsie
+/*
+// 题目: 实现一个请求错误重试函数 fetchWithRetry; 最多自动重试 retry 次，重试延时 timeout ms，任意一次成功就直接返回，返回结果为promsie
 function fetchWithRetry(retry, timeout){
 }
- */
+*/
 
 
 /**
@@ -12,32 +12,32 @@ function fetchWithRetry(retry, timeout){
  */
 function fetchWithRetry(retry = 3, timeout = 800) {
 
-  let p = {
+  let promiseWrap = {
     promise: null,
     reoslve: () => { },
     reject: () => { }
   }
 
-  p.promise = new Promise((reoslve, reject) => {
-    p.reoslve = reoslve;
-    p.reject = reject;
+  promiseWrap.promise = new Promise((reoslve, reject) => {
+    promiseWrap.reoslve = reoslve;
+    promiseWrap.reject = reject;
   })
 
 
   const retryAction = () => {
     fetch
-      .then(p.reoslve)
+      .then(promiseWrap.reoslve)
       .catch(e => {
         retry--;
         if (retry > 0) {
           setTimeout(retryAction, timeout);
         } else {
-          p.reject(e);
+          promiseWrap.reject(e);
         }
       });
   }
 
   retryAction();
 
-  return p.promise;
+  return promiseWrap.promise;
 } 
