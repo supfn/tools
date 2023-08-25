@@ -1,39 +1,65 @@
 /*
-扁平化对象：写一个函数，可以把一个对象转换成一个扁平的对象,具体如下
+// 题目：扁平化对象，写一个函数，可以把一个对象转换成一个扁平的对象
 
-let a = {
-  'a': {
-    'b': {
-      'c': 12,
-      'd': 'Hello World'
-    },
-    'e': [1,2,3]
+flattenMap(obj){
+
+}
+
+function test(){
+  let obj = {
+    'a': {
+      'b': {
+        'c': 12,
+        'd': 'Hello World'
+      },
+      'e': [1,2,3]
+    }
   }
+  let result = flattenMap(obj);
+  console.log(result);
+  // result: {
+  //   'a/b/c': 12,
+  //   'a/b/d': 'Hello World',
+  //   'a/e': [1,2,3]
+  // }
 }
-flattenMap(a);
-return {
-  'a/b/c': 12,
-  'a/b/d': 'Hello World',
-  'a/e': [1,2,3]
-}
+test()
+*/
 
-* */
 
-const isObject = val => Object.prototype.toString.call(val) === "[object Object]";
-
-function flattenMap(map) {
+function flattenMap(obj) {
   const result = {};
+  const isObject = val => Object.prototype.toString.call(val) === "[object Object]";
 
-  const loop = (map, path) => {
-    Object.keys(map).forEach(key => {
-      if (isObject(map[key])) {
-        loop(map[key], `${path}${key}/`)
+  const loop = (obj, path) => {
+    Object.keys(obj).forEach(key => {
+      if (isObject(obj[key])) {
+        loop(obj[key], `${path}${key}/`)
       } else {
-        result[`${path}${key}`] = map[key]
+        result[`${path}${key}`] = obj[key]
       }
     })
   }
-  loop(map, '');
+  loop(obj, '');
   return result;
 }
 
+function test(){
+  let obj = {
+    'a': {
+      'b': {
+        'c': 12,
+        'd': 'Hello World'
+      },
+      'e': [1,2,3]
+    }
+  }
+  let result = flattenMap(obj);
+  console.log(result);
+  // result: {
+  //   'a/b/c': 12,
+  //   'a/b/d': 'Hello World',
+  //   'a/e': [1,2,3]
+  // }
+}
+test()
