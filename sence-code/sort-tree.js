@@ -1,5 +1,7 @@
-// 还原扁平的树结构，结构如下，id表示当前节点id，parentId表示其父节点id。
-const listTree = [
+/* 
+// 还原扁平的树结构，id 表示当前节点 id，parentId 表示其父节点 id，parentId 为 0 表示无父节点
+// 结构如下:
+const treeList = [
   { id: 1, parentId: 2 },
   { id: 2, parentId: 0 },
   { id: 3, parentId: 4 },
@@ -10,47 +12,66 @@ const listTree = [
   { id: 8, parentId: 3 },
 ];
 
-const sortTree = (list) => {
+function restoreTree(treeList){
+}
+
+function test() {
+  let ret = JSON.stringify(restoreTree(treeList), null, 2)
+  console.log(ret);
+}
+test(); 
+*/
+
+
+const treeList = [
+  { id: 1, parentId: 2 },
+  { id: 2, parentId: 0 },
+  { id: 3, parentId: 4 },
+  { id: 4, parentId: 0 },
+  { id: 5, parentId: 4 },
+  { id: 6, parentId: 2 },
+  { id: 7, parentId: 2 },
+  { id: 8, parentId: 3 },
+];
+function restoreTree(treeList) {
   let result = [];
-  let nList = [];
-  for (let i = 0; i < list.length; i++) {
-    if (list[i].parentId === 0) {
-      result.push(list[i]);
+  let levelList = [];
+
+  for (let i = 0; i < treeList.length; i++) {
+    if (treeList[i].parentId === 0) {
+      result.push(treeList[i]);
     } else {
-      nList.push(list[i]);
+      levelList.push(treeList[i]);
     }
   }
-  const sort = (parent, child) => {
+
+  const handle = (parent, child) => {
     if (!parent) {
       return;
     }
     if (parent.id === child.parentId) {
-      if (parent.child) {
-        parent.child.push(child);
-      } else {
-        parent.child = [child];
-      }
+      parent.children = parent.children || [];
+      parent.children.push(child);
       return;
     }
-    if (parent.child) {
-      parent.child.forEach((v) => {
-        sort(v, child);
+    if (parent.children) {
+      parent.children.forEach((pChild) => {
+        handle(pChild, child);
       });
     }
-    return;
   };
-  nList.forEach((v) => {
-    result.forEach((i) => {
-      sort(i, v);
+
+  levelList.forEach((treeNode) => {
+    result.forEach((pTreeNode) => {
+      handle(pTreeNode, treeNode);
     });
   });
+
   return result;
 };
 
-// 测试代码
 function test() {
-  let ret = JSON.stringify(sortTree(listTree), null, 2)
+  let ret = JSON.stringify(restoreTree(treeList), null, 2)
   console.log(ret);
 }
-
 test();
