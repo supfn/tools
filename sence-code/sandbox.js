@@ -1,5 +1,9 @@
 // 题目：完成沙箱 SandBox 的代码编写， 使其通过下面的测试代码
 // class SandBox {
+//   activate(){
+//   }
+//   inactivate(){
+//   }
 // }
 
 function test() {
